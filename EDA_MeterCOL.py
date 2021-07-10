@@ -26,29 +26,50 @@ Variables_types=["float32","float32","float32","float32","float32","float32","fl
 Types_dict=dict(zip(Variables_ToPlot,Variables_types))
 year=2016
 
+#Importa csv
 DF_COL=pd.read_csv(data_path+"MeteorCOLUnited.csv",usecols=Variables_ToPlot+["Year","Month","Day","Hour","Minute","Latitude","Longitude"])
-DF_COL["Datetime"]=pd.to_datetime(DF_COL["Year"].astype("str")+"-"+DF_COL["Month"].astype("str")+"-"+DF_COL["Day"].astype("str")+" "+DF_COL["Hour"].astype("str")+":"+DF_COL["Minute"].astype("str")+":00")
+#Crea varible datetime
+# DF_COL["Datetime"]=pd.to_datetime(DF_COL["Year"].astype("str")+"-"+DF_COL["Month"].astype("str")+"-"+DF_COL["Day"].astype("str")+" "+DF_COL["Hour"].astype("str")+":"+DF_COL["Minute"].astype("str")+":00")
 
+#Cambia 
 DF_COL.astype(Types_dict)
 print("DF_COL imported with columns and dtypes:")
 print(DF_COL.dtypes)
-print(DF_COL["Latitude"].value_counts())
 
-def plot_series(DF,serie,year,axis):
-    print("generating plot for year {} and variable {}".format(year,serie))
+#Selecciona forma de agregacion de las variables 
+variables_functions=[np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean]
+variable_agg=dict(zip(Variables_ToPlot,variables_functions))
+DF_plot=DF_COL[DF_COL["Year"]==year][Variables_ToPlot+["Year","Month","Day","Latitude","Longitude"]].groupby(["Year","Month","Day","Latitude","Longitude"]).agg(variable_agg).reset_index()
+DF_plot["Datetime"]=pd.to_datetime(DF_plot[["Year","Month","Day"]])
+
+def plot_series(DF,serie,axis):
+    """Returns  a seaborn lineplot from the selected dataframe grouped by Latitude for the year stated and the selected column
+
+    Args:
+        DF (Dataframe): Dataframe to use
+        serie (str): Name of variable in DF to plot
+        axis (matplotlib.axis): axis in generated matplotlib.axes 
+
+    Returns:
+        sns.lineplot: Lineplot separated by latitude of sensor through selected year
+    """        
+    # print("generating plot for year {} and variable {}".format(year,serie))
     LinePlot=sns.lineplot(data=DF,y=serie,x="Datetime",hue="Latitude",ax=axis,legend=False,ci=None)
+    LinePlot.set_xticklabels(labels=["Ene","Mar","May","Jul","Sep","Nov"],rotation=30)
     axis.set_ylabel(serie,size="x-small")
     axis.set_xlabel("Datetime",size="xx-small")
-    print("plot done!")
+    
     return LinePlot
 
-fig,(axes)=plt.subplots(3,3)
+#Generates plot
+print("Plotting variables for year {}".format(year))
+fig,(axes)=plt.subplots(len(Variables_ToPlot),1,sharex=True)
 newaxes=axes.flatten()
-DF_plot=DF_COL[DF_COL["Year"]==year][Variables_ToPlot+["Datetime","Latitude","Longitude"]]
 for k in tqdm(range(9)):
-    _=plot_series(DF_plot,Variables_ToPlot[k],year,newaxes[k])
+    _=plot_series(DF_plot,Variables_ToPlot[k],newaxes[k])
 plt.suptitle("Variables for year {}".format(year))
-plt.tight_layout(pad=2.5)
+fig.set_size_inches(5, 1.5*len(Variables_ToPlot))
+plt.tight_layout()
 plt.savefig(path+"/EDA_variables_{}.png".format(year))
 
 print("Script corre en {} minutos".format((datetime.datetime.now().timestamp()-start)/60))
