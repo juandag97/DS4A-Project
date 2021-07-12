@@ -6,6 +6,7 @@ Toca poner el path en *data_path* a donde esta guardado el csv MeteorCOLUnited.
 Figura se guarda en el mismo directorio de donde esta guardado corre el script.
 
 """ 
+year=int(input("Input year for plotting:"))
 import numpy as np
 import matplotlib.pylab as plt
 import datetime
@@ -24,23 +25,23 @@ print("Imports done")
 Variables_ToPlot=["DHI","DNI","GHI","Dew Point","Surface Albedo","Precipitable Water","Relative Humidity","Temperature","Pressure"]
 Variables_types=["float32","float32","float32","float32","float32","float32","float32","float32","float32"]
 Types_dict=dict(zip(Variables_ToPlot,Variables_types))
-year=2016
+
 
 #Importa csv
 DF_COL=pd.read_csv(data_path+"MeteorCOLUnited.csv",usecols=Variables_ToPlot+["Year","Month","Day","Hour","Minute","Latitude","Longitude"])
-#Crea varible datetime
-# DF_COL["Datetime"]=pd.to_datetime(DF_COL["Year"].astype("str")+"-"+DF_COL["Month"].astype("str")+"-"+DF_COL["Day"].astype("str")+" "+DF_COL["Hour"].astype("str")+":"+DF_COL["Minute"].astype("str")+":00")
 
-#Cambia 
+#Cambia dtypes de cada columna
 DF_COL.astype(Types_dict)
-print("DF_COL imported with columns and dtypes:")
-print(DF_COL.dtypes)
-
+# print("DF_COL imported with columns and dtypes:")
+# print(DF_COL.dtypes)
 #Selecciona forma de agregacion de las variables 
 variables_functions=[np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean]
 variable_agg=dict(zip(Variables_ToPlot,variables_functions))
 DF_plot=DF_COL[DF_COL["Year"]==year][Variables_ToPlot+["Year","Month","Day","Latitude","Longitude"]].groupby(["Year","Month","Day","Latitude","Longitude"]).agg(variable_agg).reset_index()
 DF_plot["Datetime"]=pd.to_datetime(DF_plot[["Year","Month","Day"]])
+
+Lats=[ 6.73 , 7.33 , 7.85 , 8.05,  8.21,  8.37 , 8.53 , 8.77 , 8.93 , 9.05,  9.17 , 9.73,10.21, 10.45, 10.49, 10.69 ,10.77, 10.97, 11.33]
+
 
 def plot_series(DF,serie,axis):
     """Returns  a seaborn lineplot from the selected dataframe grouped by Latitude for the year stated and the selected column
@@ -54,11 +55,12 @@ def plot_series(DF,serie,axis):
         sns.lineplot: Lineplot separated by latitude of sensor through selected year
     """        
     # print("generating plot for year {} and variable {}".format(year,serie))
-    LinePlot=sns.lineplot(data=DF,y=serie,x="Datetime",hue="Latitude",ax=axis,legend=False,ci=None)
+    LinePlot=sns.lineplot(data=DF,y=serie,x="Datetime",hue="Latitude",ax=axis,legend=False,ci=None,palette='vlag')
     LinePlot.set_xticklabels(labels=["Ene","Mar","May","Jul","Sep","Nov"],rotation=30)
     axis.set_ylabel(serie,size="x-small")
     axis.set_xlabel("Datetime",size="xx-small")
-    
+    #GnBu - funciona
+    # coolwarm mako vlag
     return LinePlot
 
 #Generates plot
