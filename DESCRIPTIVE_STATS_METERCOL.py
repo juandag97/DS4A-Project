@@ -35,10 +35,10 @@ variables=['DHI','DNI','GHI', 'Clearsky DHI', 'Clearsky DNI', 'Clearsky GHI','Wi
        'Global Horizontal UV Irradiance (295-385nm)']
 variables1=['DHI']
 
-#no me funciono el for del export de varibas graficas , falta revisar el plt.savefig
+# revisar el plt.savefig
 for i in variables1:
-    var='Surface Albedo'
-    
+    var=i
+    hist_kde=sns.histplot(data=metercol, x=var,kde=True).set(title='Histogram and KDE '+var+' P[0,100]')
     #export de la figura en la carpeta de los datos
     plt.savefig(Datos_metercol+"Histograma_KDE_P[0,100]_"+var+".png",dpi=300)
     #plt.figure.clear()
