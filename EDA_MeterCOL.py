@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#Author : Benjamin Leon - DS4A cohort 5
 """
 Guarda figura con las 9 variables puestas en *Variables_ToPlot* para el año *year*.
 Toca poner el path en *data_path* a donde esta guardado el csv MeteorCOLUnited.
-Figura se guarda en el mismo directorio de donde esta guardado corre el script.
+Figura se guarda en el mismo directorio de donde se corre el script en la carpeta \ExportData.
 
 """ 
 year=int(input("Input year for plotting:"))
@@ -27,7 +28,7 @@ Variables_types=["float32","float32","float32","float32","float32","float32","fl
 Types_dict=dict(zip(Variables_ToPlot,Variables_types))
 
 
-#Importa csv
+#Importa csv creado por DAataJoin.py
 DF_COL=pd.read_csv(data_path+"MeteorCOLUnited.csv",usecols=Variables_ToPlot+["Year","Month","Day","Hour","Minute","Latitude","Longitude"])
 
 #Cambia dtypes de cada columna
@@ -39,8 +40,7 @@ variables_functions=[np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.mean,np.
 variable_agg=dict(zip(Variables_ToPlot,variables_functions))
 DF_plot=DF_COL[DF_COL["Year"]==year][Variables_ToPlot+["Year","Month","Day","Latitude","Longitude"]].groupby(["Year","Month","Day","Latitude","Longitude"]).agg(variable_agg).reset_index()
 DF_plot["Datetime"]=pd.to_datetime(DF_plot[["Year","Month","Day"]])
-
-Lats=[ 6.73 , 7.33 , 7.85 , 8.05,  8.21,  8.37 , 8.53 , 8.77 , 8.93 , 9.05,  9.17 , 9.73,10.21, 10.45, 10.49, 10.69 ,10.77, 10.97, 11.33]
+DF_plot["Lat_Lon"]=DF_plot["Latitude"].astype("str")+DF_plot["Longitude"].astype("str")
 
 
 def plot_series(DF,serie,axis):
@@ -55,7 +55,7 @@ def plot_series(DF,serie,axis):
         sns.lineplot: Lineplot separated by latitude of sensor through selected year
     """        
     # print("generating plot for year {} and variable {}".format(year,serie))
-    LinePlot=sns.lineplot(data=DF,y=serie,x="Datetime",hue="Latitude",ax=axis,legend=False,ci=None,palette='vlag')
+    LinePlot=sns.lineplot(data=DF,y=serie,x="Datetime",hue="Lat_Lon",ax=axis,legend=False,ci=None,palette='vlag')
     LinePlot.set_xticklabels(labels=["Ene","Mar","May","Jul","Sep","Nov"],rotation=30)
     axis.set_ylabel(serie,size="x-small")
     axis.set_xlabel("Datetime",size="xx-small")
@@ -72,7 +72,7 @@ for k in tqdm(range(9)):
 plt.suptitle("Variables for year {}".format(year))
 fig.set_size_inches(5, 1.5*len(Variables_ToPlot))
 plt.tight_layout()
-plt.savefig(path+"/EDA_variables_{}.png".format(year))
+plt.savefig(path+"/ExportData/EDA_variables_{}.png".format(year))
 
 print("Script corre en {} minutos".format((datetime.datetime.now().timestamp()-start)/60))
 

@@ -69,15 +69,15 @@ print("Generating dictionary with dataframes for every meteorologic data File fr
 # for k in tqdm(range(len(meteoroCOL))):
 for k in range(len(meteoroCOL)):
     a=pd.read_csv(meteoroCOL[k],delimiter=",",skiprows=2)
-    if a["Year"].max()>2004:
-        MetDict2["data"+str(k)]=a[a["Year"]>=2005].copy()
+    if a["Year"].max()>1998:
+        MetDict2["data"+str(k)]=a[a["Year"]>=1999].copy()
         print(meteoroCOL[k].replace(working_path,"").replace('/../Raw_Data/Datos_Meteorologicos', "").replace(".csv","")[-24:].split("_"))
         MetDict2["data"+str(k)]["File"]=meteoroCOL[k].replace(working_path,"").replace('/../Raw_Data/Datos_Meteorologicos', "").replace(".csv","")
         MetDict2["data"+str(k)][["File","Latitude","Longitude","Year"]]=MetDict2["data"+str(k)]["File"].str[-24:].str.rsplit("_",expand=True,n=3)
         # MetDict2["data"+str(k)][["File","Latitude","Longitude","Year"]]=meteoroCOL[k].replace(working_path,"").replace('/../Raw_Data/Datos_Meteorologicos', "").replace(".csv","")[-24:].split("_")
         print(meteoroCOL[k]+" Done!")
     else:
-        print(meteoroCOL[k] + " is before 2005")
+        print(meteoroCOL[k] + " is before 1998")
     
 DF_Met2=pd.concat(MetDict2.values(),ignore_index=True)
 print("Shape of Colombia meteorologic data:")
