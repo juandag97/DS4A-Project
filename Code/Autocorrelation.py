@@ -18,7 +18,7 @@ ts1=datetime.datetime.now().timestamp()
 LonLatNum=0 #Choose number of appearance of Longitude-Latitude tuple to plot autocorrelation at that station
 VarNum=9    #Choose variable number from the list Variables_ToPlot
 data_path='/home/bleon/Documents/DS4A/DS4A_Project/Processed_Data/'
-Export_path='/home/bleon/Documents/DS4A/DS4A_Project/Code/ExportData/'
+Export_path='/home/bleon/Documents/DS4A/DS4A_git/DS4A-Project/Code/ExportData/'
 plt.style.use('ggplot')
 
 Variables_ToPlot=["DHI","DNI","GHI","Dew Point","Surface Albedo","Precipitable Water","Relative Humidity","Temperature","Pressure","Wind Speed"]
@@ -41,15 +41,18 @@ LonLatValues=New_DF["LonLat"].unique().tolist()
 
 #Autocorrelation
 series=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]]
-fig,(axes1,axes2)=plt.subplots(2,1,sharex=True)
+series2=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]].diff()
+fig,(axes1,axes2,axes3,axes4)=plt.subplots(2,2,sharex=True)
 axes2.set_xlabel("lags")
 # print(type(LonLatValues[LonLatNum]))
 # plt.suptitle(Variables_ToPlot[VarNum]+" with lags of 1 month ")
-plt.suptitle(Variables_ToPlot[VarNum]+" with lags of 1 month "+" at location {}".format(str(LonLatValues[LonLatNum])))
+# plt.suptitle(Variables_ToPlot[VarNum]+" with lags of 1 month "+" at location {}".format(str(LonLatValues[LonLatNum])))
 
 # autocorrelation_plot(series)
-plot_acf(series,lags=50,ax=axes1)
-plot_pacf(series,lags=50,ax=axes2)
+plot_acf(series,lags=50,ax=axes1,title="Autocorrelation "+Variables_ToPlot[VarNum])
+plot_pacf(series,lags=50,ax=axes2,title="Partial autocorrlation "+Variables_ToPlot[VarNum])
+plot_acf(series2,lags=50,ax=axes3,title="Autocorrelation d."+Variables_ToPlot[VarNum])
+plot_pacf(series2,lags=50,ax=axes4,title="Partial autocorrlation d."+Variables_ToPlot[VarNum])
 plt.tight_layout()
 ts2=datetime.datetime.now().timestamp()
 plt.savefig(Export_path+"Autocorrelation/"+Variables_ToPlot[VarNum]+"_PACF_ACF.png") 
