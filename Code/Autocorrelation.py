@@ -42,7 +42,8 @@ LonLatValues=New_DF["LonLat"].unique().tolist()
 #Autocorrelation
 series=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]]
 series2=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]].diff()[1:]
-fig,axes1=plt.subplots(2,2,sharex=True)
+series3=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]].diff()[1:].diff()[1:]
+fig,axes1=plt.subplots(3,2,sharex=True)
 axes=axes1.flatten()
 # axes2.set_xlabel("lags")
 # print(type(LonLatValues[LonLatNum]))
@@ -54,8 +55,10 @@ plot_acf(series,lags=50,ax=axes[0],title="ACF "+Variables_ToPlot[VarNum])
 plot_pacf(series,lags=50,ax=axes[1],title="PACF "+Variables_ToPlot[VarNum])
 plot_acf(series2,lags=50,ax=axes[2],title="ACF d."+Variables_ToPlot[VarNum])
 plot_pacf(series2,lags=50,ax=axes[3],title="PACF d."+Variables_ToPlot[VarNum])
+plot_acf(series3,lags=50,ax=axes[4],title="ACF dd."+Variables_ToPlot[VarNum])
+plot_pacf(series3,lags=50,ax=axes[5],title="PACF dd."+Variables_ToPlot[VarNum])
 plt.tight_layout()
 ts2=datetime.datetime.now().timestamp()
-plt.savefig(Export_path+"Autocorrelation/"+Variables_ToPlot[VarNum]+"_PACF_ACF.png") 
+plt.savefig(Export_path+"Autocorrelation/"+Variables_ToPlot[VarNum]+"_PACF_ACF_dd.png") 
 print("time to run script and save figure ={} seconds".format(ts2-ts1))
 # plt.show()
