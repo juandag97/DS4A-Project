@@ -41,18 +41,19 @@ LonLatValues=New_DF["LonLat"].unique().tolist()
 
 #Autocorrelation
 series=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]]
-series2=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]].diff()
-fig,(axes1,axes2,axes3,axes4)=plt.subplots(2,2,sharex=True)
-axes2.set_xlabel("lags")
+series2=New_DF[New_DF["LonLat"]==LonLatValues[LonLatNum]][Variables_ToPlot[VarNum]].diff()[1:]
+fig,axes1=plt.subplots(2,2,sharex=True)
+axes=axes1.flatten()
+# axes2.set_xlabel("lags")
 # print(type(LonLatValues[LonLatNum]))
 # plt.suptitle(Variables_ToPlot[VarNum]+" with lags of 1 month ")
 # plt.suptitle(Variables_ToPlot[VarNum]+" with lags of 1 month "+" at location {}".format(str(LonLatValues[LonLatNum])))
 
 # autocorrelation_plot(series)
-plot_acf(series,lags=50,ax=axes1,title="Autocorrelation "+Variables_ToPlot[VarNum])
-plot_pacf(series,lags=50,ax=axes2,title="Partial autocorrlation "+Variables_ToPlot[VarNum])
-plot_acf(series2,lags=50,ax=axes3,title="Autocorrelation d."+Variables_ToPlot[VarNum])
-plot_pacf(series2,lags=50,ax=axes4,title="Partial autocorrlation d."+Variables_ToPlot[VarNum])
+plot_acf(series,lags=50,ax=axes[0],title="ACF "+Variables_ToPlot[VarNum])
+plot_pacf(series,lags=50,ax=axes[1],title="PACF "+Variables_ToPlot[VarNum])
+plot_acf(series2,lags=50,ax=axes[2],title="ACF d."+Variables_ToPlot[VarNum])
+plot_pacf(series2,lags=50,ax=axes[3],title="PACF d."+Variables_ToPlot[VarNum])
 plt.tight_layout()
 ts2=datetime.datetime.now().timestamp()
 plt.savefig(Export_path+"Autocorrelation/"+Variables_ToPlot[VarNum]+"_PACF_ACF.png") 
