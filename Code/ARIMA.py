@@ -39,9 +39,13 @@ print("Data done")
 print("Location chosen - coordinates= {}".format(Location))
 print("Variable to forecast: {}".format(Variable))
 
-DF=CompleteDF[CompleteDF["Coords"]==Location]["Year","Month",Location,Variable,"datetime"].groupby(["Year","Month",Location]).mean()
+DF=CompleteDF[CompleteDF["Coords"]==Location][["Year","Month","Coords",Variable,"datetime"]].groupby(["Year","Month","Coords"]).mean()
 fig=plt.figure()
-DF[Variable].plot()
+# DF[[Variable,"datetime"]][Variable].plot()
+plt.plot( DF[[Variable,"datetime"]]["datetime"], DF[[Variable,"datetime"]][Variable])
+plt.xlabel("Date")
+plt.ylabel(Variable)
+plt.title(Variable+" for location "+str(Location))
 plt.show()
 
 
