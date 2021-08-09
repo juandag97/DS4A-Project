@@ -33,15 +33,15 @@ print("Data done")
 # User must imput CoordNo which indicates which location to forecast and VarNo to chose among Temperature, GHI and Wind Speed 
 Variables_to_forecast=["Temperature","GHI","Wind Speed"]
 AllCoords=CompleteDF["Coords"].unique().tolist()
-VarNo=0
-CoordNo=2
-Variable=Variables_to_forecast[VarNo]
-Location=AllCoords[CoordNo]
-DF=CompleteDF[CompleteDF["Coords"]==Location][["Year","Month","Coords",Variable,"datetime"]].groupby(["Year","Month","Coords"]).mean().reset_index()
+# VarNo=0
+# CoordNo=2
+# Variable=Variables_to_forecast[VarNo]
+# Location=AllCoords[CoordNo]
+DF=CompleteDF[["Year","Month","Coords"]+Variables_to_forecast].groupby(["Year","Month","Coords"]).mean().reset_index()
 DF["datetime"]=pd.to_datetime(DF["Year"].astype("str")+"-"+DF["Month"].astype("str")+"-01")
-DF.head(5)
-print("Location chosen - coordinates= {}".format(Location))
-print("Variable to forecast: {}".format(Variable))
+# DF.head(5)
+# print("Location chosen - coordinates= {}".format(Location))
+# print("Variable to forecast: {}".format(Variable))
 
 #ARIMA Model fitting with parameters
 def ArimaForecast(loca,vari,ARp=1,Id=1,MAq=1,SEs=12):
@@ -59,20 +59,29 @@ def ArimaForecast(loca,vari,ARp=1,Id=1,MAq=1,SEs=12):
         MyData (dictionary): Dictionary containing data series,time stamp, location, variable and AIC value of fitted model
         MyForecast (dictionary): Dictionary containing forecasted values and dates for 2 years
     """    
-    NewDF=CompleteDF[CompleteDF["Coords"]==loca][CompleteDF["Year"]<=2020][["Year","Month","Coords",vari,"datetime"]].groupby(["Year","Month","Coords"]).mean().reset_index()
+    NewDF=CompleteDF[CompleteDF["Coords"]==loca][["Year","Month","Coords",vari]]
+    NewDF=NewDF[NewDF["Year"]<=2020].groupby(["Year","Month","Coords"]).mean().reset_index()
+    print(NewDF.head(3))
     NewDF["datetime"]=pd.to_datetime(NewDF["Year"].astype("str")+"-"+NewDF["Month"].astype("str")+"-01")
     TimeSeries=NewDF[vari]
     TimeSeries_dates=NewDF["datetime"]
-    TheModel_fitted=ARIMA(TimeSeries,seasonal_order=(ARp,Id,MAq,SEs))
+    TheModel_fitted=ARIMA(TimeSeries,seasonal_order=(ARp,Id,MAq,SEs)).fit()
     
     NewForecast=pd.Series(TheModel_fitted.forecast(24, alpha=0.05)).tolist()
     NewForecast_dates=pd.to_datetime(pd.Series(["2021-"+str(i+1)+"-01" for i in range(12)]+["2020-"+str(i+1)+"-01" for i in range(12)])).tolist()
     
-    MyForecast={"Location":loca,"Variable":vari,"Values":NewForecast,"datetime":NewForecast_dates,"AIC":TheModel_fitted.aic}
+    MyForecast={"Location":[loca for n in range(len(NewForecast_dates))],"Variable":[vari for n in range(len(NewForecast_dates))],"Values":NewForecast,"datetime":NewForecast_dates,"AIC":[TheModel_fitted.aic for n in range(len(NewForecast_dates))]}
     MyData={"Location":loca,"Variable":vari,"Values":TimeSeries,"datetime":TimeSeries_dates}
     return MyData,MyForecast
 
-
-
+forecasted=pd.DataFrame({"Location":[],"Variable":[],"Values":[],"datetime":[],"AIC":[]})
+for loc in AllCoords:
+    for var in Variables_to_forecast:
+        _,NewDF=ArimaForecast(loca=loc,vari=var)
+        forecasted=pd.concat([pd.DataFrame(NewDF),forecasted],ignore_index=True)
+        print("Variable {} and location {} forecast done after {} seconds".format(var,loc,datetime.datetime.now().timestamp()-ts1))
+print(forecasted.head(10))   
+print(forecasted.describe())
+forecasted.to_csv(data_path+"forecasted_24Months.csv")
 ts2=datetime.datetime.now().timestamp()
 print("Running script took {} seconds".format(ts2-ts1))
