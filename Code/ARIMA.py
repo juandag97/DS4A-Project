@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-ARIMA forecasting for different variable and location
+ARIMA forecasting for different variables and locations, set to forecast 24 months from january 2021
+input:MeteorCOLUnited.csv
+output: forecasted_24Months.csv
 """ 
 #Imports
 import datetime
@@ -39,9 +41,7 @@ AllCoords=CompleteDF["Coords"].unique().tolist()
 # Location=AllCoords[CoordNo]
 DF=CompleteDF[["Year","Month","Coords"]+Variables_to_forecast].groupby(["Year","Month","Coords"]).mean().reset_index()
 DF["datetime"]=pd.to_datetime(DF["Year"].astype("str")+"-"+DF["Month"].astype("str")+"-01")
-# DF.head(5)
-# print("Location chosen - coordinates= {}".format(Location))
-# print("Variable to forecast: {}".format(Variable))
+
 
 #ARIMA Model fitting with parameters
 def ArimaForecast(loca,vari,ARp=1,Id=1,MAq=1,SEs=12):
@@ -65,8 +65,7 @@ def ArimaForecast(loca,vari,ARp=1,Id=1,MAq=1,SEs=12):
     NewDF["datetime"]=pd.to_datetime(NewDF["Year"].astype("str")+"-"+NewDF["Month"].astype("str")+"-01")
     TimeSeries=NewDF[vari]
     TimeSeries_dates=NewDF["datetime"]
-    TheModel_fitted=ARIMA(TimeSeries,seasonal_order=(ARp,Id,MAq,SEs)).fit()
-    
+    TheModel_fitted=ARIMA(TimeSeries,order=(1,1,1),seasonal_order=(ARp,Id,MAq,SEs)).fit()
     NewForecast=pd.Series(TheModel_fitted.forecast(24, alpha=0.05)).tolist()
     NewForecast_dates=pd.to_datetime(pd.Series(["2021-"+str(i+1)+"-01" for i in range(12)]+["2020-"+str(i+1)+"-01" for i in range(12)])).tolist()
     

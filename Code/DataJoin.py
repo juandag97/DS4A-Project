@@ -2,6 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Joining files for organized data 
+inputs: All histload files
+        All meterological stations files
+        Residences consumption file
+outputs: HistloadUnited.CSV
+        MeteorCOLUnited.csv
+        MeteorUnited.csv
+        ResidencesUnited.csv
 """ 
 #%% Importing modules
 
