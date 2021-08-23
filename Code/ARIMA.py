@@ -65,7 +65,7 @@ def ArimaForecast(loca,vari,ARp=1,Id=1,MAq=1,SEs=12):
     NewDF["datetime"]=pd.to_datetime(NewDF["Year"].astype("str")+"-"+NewDF["Month"].astype("str")+"-01")
     TimeSeries=NewDF[vari]
     TimeSeries_dates=NewDF["datetime"]
-    TheModel_fitted=ARIMA(TimeSeries,order=(1,1,1),seasonal_order=(ARp,Id,MAq,SEs)).fit()
+    TheModel_fitted=ARIMA(TimeSeries,order=(2,2,1),seasonal_order=(ARp,Id,MAq,SEs)).fit()
     NewForecast=pd.Series(TheModel_fitted.forecast(24, alpha=0.05)).tolist()
     NewForecast_dates=pd.to_datetime(pd.Series(["2021-"+str(i+1)+"-01" for i in range(12)]+["2020-"+str(i+1)+"-01" for i in range(12)])).tolist()
     
@@ -81,6 +81,36 @@ for loc in AllCoords:
         print("Variable {} and location {} forecast done after {} seconds".format(var,loc,datetime.datetime.now().timestamp()-ts1))
 print(forecasted.head(10))   
 print(forecasted.describe())
-forecasted.to_csv(data_path+"forecasted_24Months.csv")
+GHI=forecasted[forecasted["Variable"]=="GHI"]
+Wind=forecasted[forecasted["Variable"]=="Wind Speed"]
+Temp=forecasted[forecasted["Variable"]=="Temperature"]
+# forecasted.to_csv(data_path+"ARIMA_24Months.csv")
+
+from sklearn.linear_model import LinearRegression
+
+
+Wind_gen=pd.read_csv(data_path+'WindSpeed.csv')
+GHI_gen=pd.read_csv(data_path+'GHI_generation.csv')
+Xg,yg=GHI_gen[["GHI"]],GHI_gen["MAX"]
+model_GHI=LinearRegression().fit(Xg,yg)
+
+Wind_gen["WindSquared"]=Wind_gen["WindSpeed"].apply(lambda x:x**2)
+Xw,yw=Wind_gen[["WindSquared","WindSpeed"]],Wind_gen["MAX"]
+model_Wind=LinearRegression().fit(Xw,yw)
+
+IntGHI,COEFGHI=model_GHI.intercept_ , model_GHI.coef_[0]
+IntWind,COEFWIND,COEFWIND2=model_Wind.intercept_ , model_Wind.coef_[0], model_Wind.coef_[1]
+def Wind_real_generation(x):
+    return IntWind+COEFWIND*x+COEFWIND2*(x**2)
+def Solar_real_generation(x):
+    return IntWind+COEFGHI*x
+
+Wind["hourly mean generation"]=Wind["Values"].apply(Wind_real_generation)
+GHI["hourly mean generation"]=GHI["Values"].apply(Solar_real_generation)
+
+Wind.to_csv(data_path+"ARIMA_Wind_Forecast.csv")
+GHI.to_csv(data_path+"ARIMA_GHI_Forecast.csv")
+
+
 ts2=datetime.datetime.now().timestamp()
 print("Running script took {} seconds".format(ts2-ts1))
