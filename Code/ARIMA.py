@@ -101,15 +101,18 @@ model_Wind=LinearRegression().fit(Xw,yw)
 IntGHI,COEFGHI=model_GHI.intercept_ , model_GHI.coef_[0]
 IntWind,COEFWIND,COEFWIND2=model_Wind.intercept_ , model_Wind.coef_[0], model_Wind.coef_[1]
 def Wind_real_generation(x):
-    return IntWind+COEFWIND*x+COEFWIND2*(x**2)
+    return IntWind+COEFWIND*(x**2)+COEFWIND2*(x)
 def Solar_real_generation(x):
-    return IntWind+COEFGHI*x
+    return IntGHI+COEFGHI*x
 
-Wind["hourly mean generation"]=Wind["Values"].apply(Wind_real_generation)
-GHI["hourly mean generation"]=GHI["Values"].apply(Solar_real_generation)
+Wind["Values"]=Wind["Values"].apply(Wind_real_generation)
+GHI["Values"]=GHI["Values"].apply(Solar_real_generation)
 
-Wind.to_csv(data_path+"ARIMA_Wind_Forecast.csv")
-GHI.to_csv(data_path+"ARIMA_GHI_Forecast.csv")
+ForecastedEnergy=pd.concat([Wind,GHI])
+
+# Wind.to_csv(data_path+"ARIMA_Wind_Forecast.csv")
+# GHI.to_csv(data_path+"ARIMA_GHI_Forecast.csv")
+ForecastedEnergy.to_csv(data_path+"ARIMAEnergy_24months.csv")
 
 
 ts2=datetime.datetime.now().timestamp()
